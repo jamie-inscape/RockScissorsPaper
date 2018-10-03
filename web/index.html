@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Rock, Scissors, Paper Battle</title>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+
+</head>
+<body>
+<div id = "loginScreen">
+	<h3>Login:</h3>
+        <div>
+		Player Id:<br>
+		<input type="text" name="playerId"><br>
+ 		Password:<br>
+		<input type="text" name="password"><br>
+		<Button id="loginButton" class="login">Login</Button>
+                <div class="badPassword">Incorrect password detected</div>
+
+	</div>
+</div>
+<div id = "leaderScreen">
+    <h3>LeaderBoard</h3>
+    <div id="challengeBox"></div>
+    <table>
+            <thead>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Score</th> 
+                    <th>Availability</th> 
+            </thead>
+            <tbody>
+
+            </tbody>
+    </table>
+
+</div>
+<div id = "gameScreen">
+	<canvas id="playerCanvas" width="800px" height="400px">I see a canvas</canvas>
+	<aside>
+	<button id="rockButton" class="choice">Rock</button>
+	<button id="scissorsButton" class="choice">Scissors</button>
+	<button id="paperButton" class="choice">Paper</button>
+	</aside>
+</div>
+<script type="text/javascript" src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="game.js"></script>
+<script type="text/javascript" src="player.js"></script>
+<script type="text/javascript" src="websocket.js"></script>
+
+</body>
+</html>
