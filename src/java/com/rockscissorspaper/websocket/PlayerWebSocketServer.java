@@ -36,6 +36,7 @@ public class PlayerWebSocketServer {
 	@OnClose
 		public void close(Session session) {
 			sessionHandler.removeSession(session);
+                        sessionHandler.checkOnlinePlayers();
 	}
 	
 	@OnError
@@ -45,26 +46,19 @@ public class PlayerWebSocketServer {
 	
 	@OnMessage
         public void handleMessage(String message, Session session) {
-
             try (JsonReader reader = Json.createReader(new StringReader(message))) {
                 JsonObject jsonMessage = reader.readObject();
-
                 if ("add".equals(jsonMessage.getString("action"))) {
                         Player player = new Player();
                         player.setName(jsonMessage.getString("name"));
                         sessionHandler.addPlayer(player);
-
                 } else if ("remove".equals(jsonMessage.getString("action"))) {
                         int id = (int) jsonMessage.getInt("id");
                         sessionHandler.removePlayer(id);
-                } else if ("toggle".equals(jsonMessage.getString("action"))) {
-                    int id = (int) jsonMessage.getInt("id");
-                    sessionHandler.togglePlayer(id);
                 } else if ("login".equals(jsonMessage.getString("action"))) {
                     String idString = jsonMessage.getString("userId");
                     int id = Integer.parseInt(idString);
-                    int status;
-                    status = (int) jsonMessage.getInt("status");
+                    int status = (int) jsonMessage.getInt("status");
                     String password = jsonMessage.getString("password");
                     if (verifyLogin(id, password)) {
                         updatePlayerStatus(id, 1);
@@ -83,16 +77,26 @@ public class PlayerWebSocketServer {
                     int userId = Integer.parseInt(jsonMessage.getString("userId"));
                     sessionHandler.rejectChallenge(userId);
                 } else if ("acceptChallenge".equals(jsonMessage.getString("action"))) {
-                    System.out.println(jsonMessage);
                     String userId = jsonMessage.getString("userId");
-                    //String opponentId = 
                     int player1 = Integer.parseInt(userId);
                     int player2 = (int)jsonMessage.getInt("opponentId");
-                    sessionHandler.startGame(player1, player2);
-                            
+                    sessionHandler.startGame(player1, player2); 
+                } else if ("userGameChoice".equals(jsonMessage.getString("action"))) {
+                    int gameId = jsonMessage.getInt("gameId");
+                    int userId = jsonMessage.getInt("userId");
+                    String choice = jsonMessage.getString("choice");
+                    sessionHandler.setGameChoice(gameId, userId, choice);
+                } else if ("updatePlayerList".equals(jsonMessage.getString("action"))) {
+                    sessionHandler.updatePlayerList();
+                } else if ("onlineConfirmation".equals(jsonMessage.getString("action"))) {
+                    int playerId = jsonMessage.getInt("userId");
+                    updatePlayerStatus(playerId, 1);
                 }
+                        
             }			
 	}
+        
+        
         
         /**
          * Return true is password matches stored password for user, otherwise
@@ -111,10 +115,13 @@ public class PlayerWebSocketServer {
         
         /**
          * Update player status in set.
+     * @param id
+     * @param status
          */
         public void updatePlayerStatus(int id, int status) {
             Player p = sessionHandler.getPlayerById(id);
             p.setStatus(status);
+            sessionHandler.updatePlayerList();
         }
         
        

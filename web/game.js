@@ -2,13 +2,16 @@
  * Game Class
  */
 
+var game = null;
+
 /**
  * Create new game.
  * @returns game
  */
-function createGame(player1, player2) {
+function createGame(gameId, player1, player2) {
 	
     var game = {
+        id: gameId,
         player1Id: player1,
         player2Id: player2,
         player1Choice: "",
@@ -21,14 +24,26 @@ function createGame(player1, player2) {
         },
         setPlayer1Choice: function(choice) {
                 this.player1Choice = choice;
+                drawPlayerImage(1, choice);
         },
         setPlayer2Choice: function(choice) {
                 this.player2Choice = choice;
+                drawPlayerImage(2, choice);
         },
     };
     return game;
+    
 }
 
+function drawPlayerImage(playerNumber, choice) {
+    var canvas = document.getElementById("playerCanvas");
+    var context2D = canvas.getContext("2d");
+    if (playerNumber == 1) {
+        
+    } else if (playerNumber == 2) {
+        
+    }
+}
 /**
  * Handle Change button click event.
  * @type type
@@ -37,6 +52,7 @@ $(document).on("click", "button.challenge", function(event){
     var name = $(this).attr("name");
     var value = $(this).attr("value");
     $("#challengeBox").html("You have Challenged "+name+"! Waiting for "+name+" to Accept");
+    $("#challengeBox").show();
     $("button.challenge").attr("disabled", true);
     var message = {
         action: "challenge",
@@ -59,7 +75,8 @@ function showChallengeBox(challengerName, challengerId) {
 + "<div><button class='acceptChallenge' value='"+challengerId+"'>Accept</button>"
 + "<button class='rejectChallenge' value='"+challengerId+"'>Reject</button></div>");
     $("button.challenge").attr("disabled", true);
-    rejectionTimer = setTimeout(rejectChallenge, 7000);
+    $("#challengeBox").show();
+    rejectionTimer = setTimeout(rejectChallenge, 10000);
 }
 
 /**
@@ -90,9 +107,8 @@ $(document).on("click", "button.acceptChallenge", function(e){
     }
     socket.send(JSON.stringify(message));
     $("button.challenge").attr("disabled", false);
-    $("#challengeBox").hide();
+    $("#challengeBox").html("");
     clearTimeout(rejectionTimer);
-    
 });
 
 /**
@@ -101,8 +117,11 @@ $(document).on("click", "button.acceptChallenge", function(e){
  * @param {type} player2
  * @returns {undefined}
  */
-function startGame(player1, player2) {
-    game = createGame(player1, player2);
+function startGame(gameId, player1, player2) {
+    $("button.choice").attr("disabled", false);
+    game = createGame(gameId, player1, player2);
+    $("#challengeBox").html("");
+    $("button.challenge").attr("disabled", false);
     showGameScreen();
 }
 
@@ -131,7 +150,15 @@ function handleRejection() {
  * @type type
  */
 $("button.choice").click(function() {
+    var choice = $(this).attr("value");
     $("button.choice").attr("disabled", true);
+    var message = {
+        action: "userGameChoice",
+        gameId: game.id,
+        userId: currentPlayer.id,
+        choice: choice
+    };
+    socket.send(JSON.stringify(message));
 });
 
 /**
@@ -150,20 +177,34 @@ $("button.login").click(function() {
     socket.send(JSON.stringify(message));
 });
 
-
-
 /**
- * exit game.
- * @returns
+ * Show win scenario
+ * @returns {undefined}
  */
-function exitGame() {
-	showOutcome();
+function showWinScenario() {
+    game = null;
+    console.log("you won!");
+    showLeaderScreen();
 }
 
 /**
- * show outcome.
- * @returns
+ * Show tie scenario
+ * @returns {undefined}
  */
-function showOutcome() {
-	
+function showTieScenario() {
+    game = null;
+    console.log("you tied!");
+    showLeaderScreen();
 }
+
+/**
+ * show lose scenario
+ * @returns {undefined}
+ */
+function showLoseScenario() {
+    game = null;
+    console.log("you lost!");
+    showLeaderScreen();
+}
+
+

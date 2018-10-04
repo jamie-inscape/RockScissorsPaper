@@ -12,15 +12,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.websocket.Session;
-import com.rockscissorspaper.model.Player;import java.sql.ResultSet;
+import com.rockscissorspaper.model.Player;
+import com.rockscissorspaper.model.Game;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
 
 
 @ApplicationScoped
 public class PlayerSessionHandler {
 
-	private int playerId = 0;
 	private final Set<Session> sessions = new HashSet<>();
 	private final Set<Player> players = new HashSet<>();
+        private final Set<Game> games = new HashSet<>();
+        //private 
         
         /**
          * Constructor.
@@ -43,6 +47,39 @@ public class PlayerSessionHandler {
             }  
         }
 	
+        /**
+         * update player list for users
+         */
+        public void updatePlayerList() {
+            for (Player player : players) {
+                JsonProvider provider = JsonProvider.provider();
+                    JsonObject updatePlayerMessage = provider.createObjectBuilder()
+			.add("action", "updatePlayer")
+                        .add("id", player.getId())
+                        .add("name", player.getName())
+                        .add("score", player.getScore())
+                        .add("status", player.getStatus())
+                        .build();
+                    sendToAllConnectedSessions(updatePlayerMessage);
+            }
+        }
+        
+        /**
+         * check online players
+         */
+        public void checkOnlinePlayers() {
+            players.forEach((player) -> {
+                player.setStatus(0);
+            });
+            sessions.forEach((session) -> {
+                JsonProvider provider = JsonProvider.provider();
+                JsonObject rejectMessage = provider.createObjectBuilder()
+                        .add("action", "checkOnline")
+                        .build();
+                sendToSession(session, rejectMessage);
+            });
+        }
+        
         /**
          * Add session.
          * @param session 
@@ -154,19 +191,96 @@ public class PlayerSessionHandler {
          * @param player2
          */
         public void startGame(int player1, int player2) {
+            Game tempGame = new Game(player1, player2);
+            games.add(tempGame);
             JsonProvider provider = JsonProvider.provider();
             JsonObject startGameMessage = provider.createObjectBuilder()
                     .add("action", "startGame")
+                    .add("gameId", tempGame.getId())
                     .add("player1", player1)
                     .add("player2", player2)
                     .build();
             sendToAllConnectedSessions(startGameMessage);
         }
         
-	public void togglePlayer(int id) {
-		
-	}
-	
+        /**
+         * set Game choice.
+         * @param gameId
+         * @param userId
+         * @param choice 
+         */
+	public void setGameChoice(int gameId, int userId, String choice) {
+            for (Game game: games) {
+                if (game.getId() == gameId) {
+                    if (game.getPlayer1Id() == userId) {
+                        game.setPlayer1Choice(choice);
+                        checkForEndGame(game);
+                    } else if (game.getPlayer2Id() == userId) {
+                        game.setPlayer2Choice(choice);
+                        checkForEndGame(game);
+                    }
+                }
+            }
+            
+        }
+        
+        /**
+         * Check for end game.
+         * @param game 
+         */
+        public void checkForEndGame(Game game) {
+            if (!("".equals(game.getPlayer1Choice())) && !("".equals(game.getPlayer2Choice()))) {
+                if (game.getPlayer2Choice().equals(game.getPlayer1Choice())) {
+                    sendTieOutcome(game.getPlayer1Id(), game.getPlayer2Id());
+                } else if ("rock".equals(game.getPlayer1Choice()) && "paper".equals(game.getPlayer2Choice())) {
+                    sendWinOutcome(game.getPlayer2Id(), game.getPlayer1Id());
+                } else if ("rock".equals(game.getPlayer1Choice()) && "scissors".equals(game.getPlayer2Choice())) {
+                    sendWinOutcome(game.getPlayer1Id(), game.getPlayer2Id());
+                } else if ("paper".equals(game.getPlayer1Choice()) && "rock".equals(game.getPlayer2Choice())) {
+                    sendWinOutcome(game.getPlayer1Id(), game.getPlayer2Id());
+                } else if ("paper".equals(game.getPlayer1Choice()) && "scissors".equals(game.getPlayer2Choice())) {
+                    sendWinOutcome(game.getPlayer2Id(), game.getPlayer1Id());
+                } else if ("scissors".equals(game.getPlayer1Choice()) && "rock".equals(game.getPlayer2Choice())) {
+                    sendWinOutcome(game.getPlayer2Id(), game.getPlayer1Id());
+                } else if ("scissors".equals(game.getPlayer1Choice()) && "paper".equals(game.getPlayer2Choice())) {
+                    sendWinOutcome(game.getPlayer1Id(), game.getPlayer2Id());
+                }
+            }
+        }
+        
+        /**
+         * Send win outcome.
+     * @param winnerId
+     * @param loserId
+         */
+        public void sendWinOutcome(int winnerId, int loserId) {
+            JsonProvider provider = JsonProvider.provider();
+            JsonObject winnerMessage = provider.createObjectBuilder()
+                    .add("action", "winGame")
+                    .add("winnerId", winnerId)
+                    .add("loserId", loserId)
+                    .build();
+            Player winner = getPlayerById(winnerId);
+            winner.setScore(winner.getScore() + 1);
+            sendToAllConnectedSessions(winnerMessage);
+        }
+        
+        /**
+         * Send tie outcome.
+         * @param player1
+         * @param player2 
+         */
+        public void sendTieOutcome(int player1, int player2) {
+            JsonProvider provider = JsonProvider.provider();
+            JsonObject tieGameMessage = provider.createObjectBuilder()
+                    .add("action", "tieGame")
+                    .add("player1", player1)
+                    .add("player2", player2)
+                    .build();
+            sendToAllConnectedSessions(tieGameMessage);
+        }
+        
+        
         /**
          * Get player by id.
          * @param id

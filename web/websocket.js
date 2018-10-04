@@ -3,9 +3,8 @@
  */
 
 window.onload = init;
-var socket = new WebSocket("ws://localhost:8080/RockScissorsPaper/actions");
-socket.onmessage = onMessage;
-var playerArray = [];
+var socket;
+var playerArray;
 
 /**
  * handle message events
@@ -51,7 +50,7 @@ function onMessage(event) {
         var userChallengedId = player.userChallengedId;
         var challengerName = player.challengerName;
         var challengerId = player.challengerId;
-        if (userChallengedId === currentPlayer.id) {
+        if (userChallengedId === currentPlayer.getId()) {
             showChallengeBox(challengerName, challengerId);
         }
     } else if(player.action === "challengeRejected") {
@@ -60,13 +59,71 @@ function onMessage(event) {
             handleRejection();
         }
     } else if (player.action === "startGame") {
+        isPlaying = true;
         var player1 = player.player1;
         var player2 = player.player2;
+        var gameId = player.gameId;
         if (player1 === currentPlayer.id || player2 === currentPlayer.id) {
-            startGame(player1, player2);
+            startGame(gameId, player1, player2);
         }
+    } else if (player.action === "winGame") {
+        var winnerId = player.winnerId;
+        var loserId = player.loserId;
+        if (currentPlayer.id == winnerId) {
+            showWinScenario();
+        } else if (currentPlayer.id == loserId) {
+            showLoseScenario();
+        }
+        updatePlayerList();
+        isPlaying = false;
+    } else if (player.action === "tieGame") {
+        showTieScenario();
+        isPlaying = false;
+    } else if (player.action === "updatePlayer") {
+        var playerId = player.id;
+        var playerName = player.name;
+        var playerScore = player.score;
+        var playerStatus = player.status;
+        for (i=0; i < playerArray.length; i++) {
+            if(playerId === playerArray[i].id) {
+                playerArray[i].setName(playerName);
+                playerArray[i].setScore(playerScore);
+                playerArray[i].setStatus(playerStatus);
+                break;
+            }
+        }
+        populateLeaderTable();
+    } else if (player.action === "checkOnline") {
+        confirmOnline();
     }
 }
+
+/**
+ * confirm user is online.
+ * @returns {undefined}
+ */
+function confirmOnline() {
+    var onlineConfirmation = {
+        action: "onlineConfirmation",
+        userId: currentPlayer.getId()
+    };
+    socket.send(JSON.stringify(onlineConfirmation));
+}
+
+
+/**
+ * update Player list message.
+ * @returns {undefined}
+ */
+function updatePlayerList() {
+    var updatePlayerListMessage = {
+        action: "updatePlayerList"
+    }
+    socket.send(JSON.stringify(updatePlayerListMessage));
+}
+
+
+
 
 /**
  * show bad password text.
@@ -108,26 +165,28 @@ function addPlayer(player) {
  * @returns {undefined}
  */
 function populateLeaderTable() {
-    playerArray.sort(function(a, b) {return a.score - b.score})
+    playerArray.sort(function(a, b) {return b.score - a.score})
     $("#leaderScreen table").html("");
-    for (i = 0; i < playerArray.length; i++) {
-        var row = [];
-        row.push("<tr>");
-        row.push("<td>"+ i + "</td>");
-        row.push("<td>"+playerArray[i].name+"</td>");
-        row.push("<td>"+playerArray[i].score+"</td>");
-        if (playerArray[i].id !== currentPlayer.id) {
-            var challengeText = (playerArray[i].status===1?
-            "<button class='challenge' name='" + playerArray[i].name + "' value='" + playerArray[i].id + "'>Challenge</button>":
-                    "offline");
-            row.push("<td>"+challengeText+"</td>");
-        } else {
-            var statusText = (playerArray[i].status===1?
-            "online":"offline");
-            row.push("<td>"+statusText+"</td>");
+    if (currentPlayer) {
+        for (i = 0; i < playerArray.length; i++) {
+            var row = [];
+            row.push("<tr>");
+            row.push("<td>"+ (i + 1) + "</td>");
+            row.push("<td>"+playerArray[i].getName()+"</td>");
+            row.push("<td>"+playerArray[i].getScore()+"</td>");
+            if (playerArray[i].getId() !== currentPlayer.id) {
+                var challengeText = (playerArray[i].getStatus()===1?
+                "<button class='challenge' name='" + playerArray[i].getName() + "' value='" + playerArray[i].getId() + "'>Challenge</button>":
+                        "unavailable");
+                row.push("<td>"+challengeText+"</td>");
+            } else {
+                var statusText = (playerArray[i].getStatus()===1?
+                "online":"unavailable");
+                row.push("<td>"+statusText+"</td>");
+            }
+            row.push("</tr>");
+            $("#leaderScreen table").append(row.join(" "));
         }
-        row.push("</tr>");
-        $("#leaderScreen table").append(row.join(" "));
     }
 }
 
@@ -152,12 +211,14 @@ function showGameScreen() {
 }
 
 
-
 /**
  * initialize.
  * @returns {undefined}
  */
 function init() {
+    playerArray = [];
+    socket = new WebSocket("ws://localhost:8080/RockScissorsPaper/actions");
+    socket.onmessage = onMessage;
     $("div.badPassword").hide();
     $("#leaderScreen").hide();
     $("#gameScreen").hide();

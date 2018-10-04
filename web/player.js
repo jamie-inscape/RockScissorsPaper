@@ -8,7 +8,6 @@
  */
 var currentPlayer = null;
 var isPlaying = false;
-var game = null;
 
 /**
  * Return a new player object.
@@ -49,7 +48,13 @@ function createPlayer(id, name, status, score) {
         },
         getStatus: function() {
             return this.status;
-        }       
+        },
+        setScore: function(score) {
+            this.score = score;
+        },
+        getScore: function() {
+            return this.score;
+        }
     }
     return newplayer;
 }
