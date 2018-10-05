@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import javax.websocket.Session;
 import com.rockscissorspaper.model.Player;
 import com.rockscissorspaper.model.Game;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 
 
@@ -214,14 +213,33 @@ public class PlayerSessionHandler {
                 if (game.getId() == gameId) {
                     if (game.getPlayer1Id() == userId) {
                         game.setPlayer1Choice(choice);
+                        notifyOpponent(userId, choice, 1);
                         checkForEndGame(game);
                     } else if (game.getPlayer2Id() == userId) {
                         game.setPlayer2Choice(choice);
+                        notifyOpponent(userId, choice, 2);
                         checkForEndGame(game);
                     }
                 }
             }
             
+        }
+        
+        /**
+         * Notify Opponent of choice.
+         * @param userId
+         * @param choice
+         * @param playerRole 
+         */
+        public void notifyOpponent(int userId, String choice, int playerRole) {
+            JsonProvider provider = JsonProvider.provider();
+            JsonObject notifyOpponentMessage = provider.createObjectBuilder()
+                    .add("action", "notifyingOpponent")
+                    .add("userId", userId)
+                    .add("choice", choice)
+                    .add("playerRole", playerRole)
+                    .build();
+            sendToAllConnectedSessions(notifyOpponentMessage);
         }
         
         /**

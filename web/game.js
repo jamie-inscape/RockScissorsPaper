@@ -17,31 +17,112 @@ function createGame(gameId, player1, player2) {
         player1Choice: "",
         player2Choice: "",
         setPlayer1Id: function(id){
-                this.player1Id = id;
+            this.player1Id = id;
+        },
+        getPlayer1Id: function() {
+            return this.player1Id;
         },
         setPlayer2Id: function(id){
-                this.player2Id = id;
+            this.player2Id = id;
+        },
+        getPlayer2Id: function() {
+            return this.player2Id;
         },
         setPlayer1Choice: function(choice) {
-                this.player1Choice = choice;
-                drawPlayerImage(1, choice);
+            this.player1Choice = choice;
+            drawPlayerImage(1, choice);
         },
         setPlayer2Choice: function(choice) {
-                this.player2Choice = choice;
-                drawPlayerImage(2, choice);
-        },
+            this.player2Choice = choice;
+            drawPlayerImage(2, choice);
+        }
     };
+    clearGameScreen();
     return game;
     
 }
 
+/**
+ * Show Win Message.
+ * @returns {undefined}
+ */
+function showWinScreen() {
+    var canvas = document.getElementById("playerCanvas");
+    var context2D = canvas.getContext("2d");
+    var backgroundImage = document.getElementById("winScreen");
+    var xPos = (game.getPlayer1Id() === currentPlayer.getId() ? 0 : 400);
+    context2D.drawImage(backgroundImage, xPos, 0);
+}
+
+/**
+ * Show Lose Message.
+ * @returns {undefined}
+ */
+function showLoseScreen() {
+    var canvas = document.getElementById("playerCanvas");
+    var context2D = canvas.getContext("2d");
+    var xPos = (game.getPlayer1Id() === currentPlayer.getId() ? 0 : 400);
+    var backgroundImage = document.getElementById("loseScreen");
+    context2D.drawImage(backgroundImage, xPos, 0);
+}
+
+/**
+ * Show Tie Message.
+ * @returns {undefined}
+ */
+function showTieScreen() {
+    var canvas = document.getElementById("playerCanvas");
+    var context2D = canvas.getContext("2d");
+    var xPos = (game.getPlayer1Id() === currentPlayer.getId() ? 0 : 400);
+    var backgroundImage = document.getElementById("tieScreen");
+    context2D.drawImage(backgroundImage, xPos, 0);
+}
+
+
+/**
+ * Clear Game screen.
+ * @returns {undefined}
+ */
+function clearGameScreen() {
+    var canvas = document.getElementById("playerCanvas");
+    var context2D = canvas.getContext("2d");
+    /*var backgroundImage = new Image();
+    backgroundImage.onLoad = function() {
+        context2D.drawImage(backgroundImage, 0, 0);
+    }
+    backgroundImage.src= "gameScreen.png";*/
+    context2D.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+
+/**
+ * Draws player choice.
+ * @param {type} playerNumber
+ * @param {type} choice
+ * @returns {undefined}
+ */
 function drawPlayerImage(playerNumber, choice) {
     var canvas = document.getElementById("playerCanvas");
     var context2D = canvas.getContext("2d");
-    if (playerNumber == 1) {
-        
-    } else if (playerNumber == 2) {
-        
+    var rockImage = document.getElementById("rock");
+    var paperImage = document.getElementById("paper");
+    var scissorsImage = document.getElementById("scissors");
+    
+    if (game.player1Choice != "" && game.player2Choice != "") {
+        if (game.player1Choice == "rock") {
+            context2D.drawImage(rockImage, 0, 0);
+        } else if (game.player1Choice == "scissors") {
+            context2D.drawImage(scissorsImage, 0, 0);
+        } else if (game.player1Choice == "paper") {
+            context2D.drawImage(paperImage, 0, 0);
+        }
+        if (game.player2Choice == "rock") {
+            context2D.drawImage(rockImage, 400, 0);
+        } else if (game.player2Choice == "scissors") {
+            context2D.drawImage(scissorsImage, 400, 0);
+        } else if (game.player2Choice == "paper") {
+            context2D.drawImage(paperImage, 400, 0);
+        }
     }
 }
 /**
@@ -158,6 +239,11 @@ $("button.choice").click(function() {
         userId: currentPlayer.id,
         choice: choice
     };
+    if (currentPlayer.id === game.getPlayer1Id()) {
+        game.setPlayer1Choice(choice);
+    } else if (currentPlayer.id === game.getPlayer2Id()) {
+        game.setPlayer2Choice(choice);
+    }
     socket.send(JSON.stringify(message));
 });
 
@@ -182,9 +268,13 @@ $("button.login").click(function() {
  * @returns {undefined}
  */
 function showWinScenario() {
-    game = null;
-    console.log("you won!");
-    showLeaderScreen();
+    setTimeout(function() {
+        showWinScreen();
+        game = null;
+        setTimeout(function() {
+           showLeaderScreen();
+        }, 10000);
+    }, 10000);
 }
 
 /**
@@ -192,9 +282,13 @@ function showWinScenario() {
  * @returns {undefined}
  */
 function showTieScenario() {
-    game = null;
-    console.log("you tied!");
-    showLeaderScreen();
+    setTimeout(function() {
+        showTieScreen();
+        game = null;
+        setTimeout(function() {
+            showLeaderScreen();
+        }, 10000);
+    }, 10000);
 }
 
 /**
@@ -202,9 +296,13 @@ function showTieScenario() {
  * @returns {undefined}
  */
 function showLoseScenario() {
-    game = null;
-    console.log("you lost!");
-    showLeaderScreen();
+    showLoseScreen();
+    setTimeout(function() {
+        game = null;
+        setTimeout(function() {
+            showLeaderScreen();
+        }, 10000);
+    }, 10000);
 }
 
 

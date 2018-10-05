@@ -66,6 +66,17 @@ function onMessage(event) {
         if (player1 === currentPlayer.id || player2 === currentPlayer.id) {
             startGame(gameId, player1, player2);
         }
+    } else if (player.action === "notifyingOpponent") {
+        var userId = player.userId;
+        var choice = player.choice;
+        var playerRole = player.playerRole;
+        if (userId !== currentPlayer.getId()) {
+            if (playerRole === 1) {
+                if (game.getPlayer1Id() === userId) game.setPlayer1Choice(choice);
+            } else if (playerRole === 2) {
+                if (game.getPlayer2Id() === userId) game.setPlayer2Choice(choice);
+            }
+        }
     } else if (player.action === "winGame") {
         var winnerId = player.winnerId;
         var loserId = player.loserId;
@@ -77,8 +88,8 @@ function onMessage(event) {
         updatePlayerList();
         isPlaying = false;
     } else if (player.action === "tieGame") {
-        showTieScenario();
-        isPlaying = false;
+            showTieScenario();
+            isPlaying = false;
     } else if (player.action === "updatePlayer") {
         var playerId = player.id;
         var playerName = player.name;
@@ -217,7 +228,7 @@ function showGameScreen() {
  */
 function init() {
     playerArray = [];
-    socket = new WebSocket("ws://localhost:8080/RockScissorsPaper/actions");
+    socket = new WebSocket("ws://192.168.2.17:8080/RockScissorsPaper/actions");
     socket.onmessage = onMessage;
     $("div.badPassword").hide();
     $("#leaderScreen").hide();

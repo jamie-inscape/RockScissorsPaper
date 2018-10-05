@@ -36,12 +36,20 @@
 
 </div>
 <div id = "gameScreen">
-	<canvas id="playerCanvas" width="800px" height="400px">I see a canvas</canvas>
-	<aside>
-	<button id="rockButton" value="rock" class="choice">Rock</button>
-	<button id="scissorsButton" value="scissors" class="choice">Scissors</button>
-	<button id="paperButton" value="paper" class="choice">Paper</button>
-	</aside>
+    <img id="rock" src="golem.png" width="400" height="400" hidden/>
+    <img id="scissors" src="scizor.png" width="400" height="400" hidden/>
+    <img id="paper" src="sudowoodo.png" width="400" height="400" hidden/>
+    <img id="winScreen" src="winScreen.png" width="400" height="400" hidden/>
+    <img id="loseScreen" src="loseScreen.png" width="400" height="400" hidden/>
+    <img id="tieScreen" src="tieScreen.png" width="400" height="400" hidden/>
+
+    
+    <canvas id="playerCanvas" width="800" height="400">I see a canvas</canvas>
+    <aside>
+    <button id="rockButton" value="rock" class="choice">Rock</button>
+    <button id="scissorsButton" value="scissors" class="choice">Scissors</button>
+    <button id="paperButton" value="paper" class="choice">Paper</button>
+    </aside>
 </div>
 <script type="text/javascript" src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="game.js"></script>
