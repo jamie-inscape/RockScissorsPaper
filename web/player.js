@@ -6,7 +6,7 @@
  * Global Variables
  * @type type
  */
-var currentPlayer = null;
+var currentPlayer;
 var isPlaying = false;
 
 /**

@@ -86,11 +86,6 @@ function showTieScreen() {
 function clearGameScreen() {
     var canvas = document.getElementById("playerCanvas");
     var context2D = canvas.getContext("2d");
-    /*var backgroundImage = new Image();
-    backgroundImage.onLoad = function() {
-        context2D.drawImage(backgroundImage, 0, 0);
-    }
-    backgroundImage.src= "gameScreen.png";*/
     context2D.clearRect(0, 0, canvas.width, canvas.height);
 }
 

@@ -228,7 +228,7 @@ function showGameScreen() {
  */
 function init() {
     playerArray = [];
-    socket = new WebSocket("ws://192.168.2.17:8080/RockScissorsPaper/actions");
+    socket = new WebSocket("ws://172.31.99.123:8080/RockScissorsPaper/actions");
     socket.onmessage = onMessage;
     $("div.badPassword").hide();
     $("#leaderScreen").hide();
