@@ -2,12 +2,20 @@
 
 #playerCanvas {
 	background-color: black;
+        width: 80%;
+}
+
+#loginBlock {
+    width: 50%;
+    margin: auto;
+    border: 3px solid black;
+    padding: 10px;
 }
 
 table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
-    width: 50%;
+    width: 80%;
 }
 
 td, th {

@@ -79,12 +79,26 @@ public class SQLLiteDatabase {
             ResultSet rs=stmt.executeQuery("UPDATE Users " +
 "SET score = " + score +
 " WHERE CustomerID =" + id);  
-            con.close();
+            System.out.println("i am here");
         } catch (Exception e) {
             System.out.println(e);
         }
     }
     
-    
+    /**
+     * add player with specified id
+     * @param id
+     * @param status
+     */
+    public static void addPlayer(int id, String userName, String password,int status) {
+        try {
+            Connection con = connect();
+            Statement stmt=con.createStatement();  
+            ResultSet rs=stmt.executeQuery("INSERT INTO RSPUsers.Users (id, name, status, Password, score) " +
+"VALUES ("+id+",'"+ userName + "',"+ status + ",'"+ password + "', 0)"); 
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
     
 }

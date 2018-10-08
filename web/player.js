@@ -6,8 +6,8 @@
  * Global Variables
  * @type type
  */
-var currentPlayer;
-var isPlaying = false;
+//var currentPlayer;
+
 
 /**
  * Return a new player object.

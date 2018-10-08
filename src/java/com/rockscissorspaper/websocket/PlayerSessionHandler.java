@@ -175,10 +175,11 @@ public class PlayerSessionHandler {
          * Reject challenge
          * @param userId
          */
-        public void rejectChallenge(int userId) {
+        public void rejectChallenge(int userId, int challengedId) {
             JsonProvider provider = JsonProvider.provider();
             JsonObject rejectChallengeMessage = provider.createObjectBuilder()
                     .add("action", "challengeRejected")
+                    .add("challengedId", challengedId)
                     .add("userId", userId)
                     .build();
             sendToAllConnectedSessions(rejectChallengeMessage);
@@ -263,6 +264,11 @@ public class PlayerSessionHandler {
                 } else if ("scissors".equals(game.getPlayer1Choice()) && "paper".equals(game.getPlayer2Choice())) {
                     sendWinOutcome(game.getPlayer1Id(), game.getPlayer2Id());
                 }
+                Player p1 = getPlayerById(game.getPlayer1Id());
+                p1.setStatus(1);
+                Player p2 = getPlayerById(game.getPlayer2Id());
+                p2.setStatus(1);
+                updatePlayerList();
             }
         }
         

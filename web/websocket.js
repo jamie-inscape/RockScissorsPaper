@@ -50,14 +50,13 @@ function onMessage(event) {
         var userChallengedId = player.userChallengedId;
         var challengerName = player.challengerName;
         var challengerId = player.challengerId;
-        if (userChallengedId === currentPlayer.getId()) {
+        if (userChallengedId === window.currentPlayer.getId()) {
             showChallengeBox(challengerName, challengerId);
         }
     } else if(player.action === "challengeRejected") {
         var userId = player.userId;
-        if (currentPlayer.id === userId) {
-            handleRejection();
-        }
+        var challengedId = player.challengedId;
+        handleRejection(userId, challengedId);
     } else if (player.action === "startGame") {
         isPlaying = true;
         var player1 = player.player1;
@@ -80,9 +79,9 @@ function onMessage(event) {
     } else if (player.action === "winGame") {
         var winnerId = player.winnerId;
         var loserId = player.loserId;
-        if (currentPlayer.id == winnerId) {
+        if (currentPlayer.id === winnerId) {
             showWinScenario();
-        } else if (currentPlayer.id == loserId) {
+        } else if (currentPlayer.id === loserId) {
             showLoseScenario();
         }
         updatePlayerList();
@@ -107,6 +106,19 @@ function onMessage(event) {
     } else if (player.action === "checkOnline") {
         confirmOnline();
     }
+}
+
+/**
+ * disable challenge box.
+ * @param {type} userId
+ * @returns {undefined}
+ */
+function displayInGameStatus(userId) {
+    $("button.challenge[value='"+userId+"']").attr("disabled", true);
+}
+
+function enableChallengeBox(userId) {
+    $("button.challenge[value='"+userId+"']").attr("disabled", false);
 }
 
 /**
@@ -186,10 +198,14 @@ function populateLeaderTable() {
             row.push("<td>"+playerArray[i].getName()+"</td>");
             row.push("<td>"+playerArray[i].getScore()+"</td>");
             if (playerArray[i].getId() !== currentPlayer.id) {
-                var challengeText = (playerArray[i].getStatus()===1?
-                "<button class='challenge' name='" + playerArray[i].getName() + "' value='" + playerArray[i].getId() + "'>Challenge</button>":
-                        "unavailable");
-                row.push("<td>"+challengeText+"</td>");
+                if (playerArray[i].getStatus() !== 3) {
+                    var challengeText = (playerArray[i].getStatus()===1?
+                    "<button class='challenge' name='" + playerArray[i].getName() + "' value='" + playerArray[i].getId() + "'>Challenge</button>":
+                            "unavailable");
+                    row.push("<td>"+challengeText+"</td>");
+                } else {
+                    row.push("<td>In Challenge</td>");
+                }
             } else {
                 var statusText = (playerArray[i].getStatus()===1?
                 "online":"unavailable");
@@ -228,7 +244,7 @@ function showGameScreen() {
  */
 function init() {
     playerArray = [];
-    socket = new WebSocket("ws://172.31.99.123:8080/RockScissorsPaper/actions");
+    socket = new WebSocket("ws://localhost:8080/RockScissorsPaper/actions");
     socket.onmessage = onMessage;
     $("div.badPassword").hide();
     $("#leaderScreen").hide();

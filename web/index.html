@@ -8,6 +8,7 @@
 </head>
 <body>
 <div id = "loginScreen">
+    <div id="loginBlock">
 	<h3>Login:</h3>
         <div>
 		Player Id:<br>
@@ -18,6 +19,7 @@
                 <div class="badPassword">Incorrect password detected</div>
 
 	</div>
+    </div>
 </div>
 <div id = "leaderScreen">
     <h3>LeaderBoard</h3>
@@ -50,7 +52,12 @@
     <button id="paperButton" value="paper" class="choice">Paper</button>
     </aside>
 </div>
-<script type="text/javascript" src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+<audio id="clickSound" src="RbMg.wav"></audio>
+<audio id="winSound" src="winsound.wav"></audio>
+<audio id="loseSound" src="losesound.wav"></audio>
+    
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="common.js"></script>
 <script type="text/javascript" src="game.js"></script>
 <script type="text/javascript" src="player.js"></script>
 <script type="text/javascript" src="websocket.js"></script>

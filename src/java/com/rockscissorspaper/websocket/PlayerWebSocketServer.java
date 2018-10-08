@@ -50,8 +50,15 @@ public class PlayerWebSocketServer {
                 JsonObject jsonMessage = reader.readObject();
                 if ("add".equals(jsonMessage.getString("action"))) {
                         Player player = new Player();
-                        player.setName(jsonMessage.getString("name"));
+                        String username = jsonMessage.getString("userName");
+                        String password = jsonMessage.getString("password");
+                        int playerId = (int) jsonMessage.getInt("playerId");
+                        player.setName(username);
+                        player.setPassword(password);
+                        player.setId(playerId);
                         sessionHandler.addPlayer(player);
+                        SQLLiteDatabase.addPlayer(playerId, username, password, 0);
+                        sessionHandler.updatePlayerList();
                 } else if ("remove".equals(jsonMessage.getString("action"))) {
                         int id = (int) jsonMessage.getInt("id");
                         sessionHandler.removePlayer(id);
@@ -73,10 +80,17 @@ public class PlayerWebSocketServer {
                     String userChallengedStr = jsonMessage.getString("userChallenged");
                     int userChallengedId =Integer.parseInt(userChallengedStr);
                     sessionHandler.issueChallenge(challengerId, userChallengedId);
+                    updatePlayerStatus(userChallengedId, 3);
+                    updatePlayerStatus(challengerId, 3);
                 } else if ("rejectChallenge".equals(jsonMessage.getString("action"))) {
+                    System.out.println(jsonMessage);
                     int userId = Integer.parseInt(jsonMessage.getString("userId"));
-                    sessionHandler.rejectChallenge(userId);
+                    int challengedId = (int)jsonMessage.getInt("challengedId");
+                    sessionHandler.rejectChallenge(userId, challengedId);
+                    updatePlayerStatus(userId, 1);
+                    updatePlayerStatus(challengedId, 1);
                 } else if ("acceptChallenge".equals(jsonMessage.getString("action"))) {
+                    System.out.println(jsonMessage);
                     String userId = jsonMessage.getString("userId");
                     int player1 = Integer.parseInt(userId);
                     int player2 = (int)jsonMessage.getInt("opponentId");
